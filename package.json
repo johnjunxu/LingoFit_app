@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "netlify dev",
-    "build": "vite build",
+    "build:functions": "esbuild netlify/functions/getAiFeedback.ts --bundle --platform=node --outfile=netlify/functions-dist/getAiFeedback.js",
+    "build": "npm run build:functions && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
@@ -23,6 +24,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.18",
+    "esbuild": "^0.27.0",
     "eslint": "^9.9.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",
