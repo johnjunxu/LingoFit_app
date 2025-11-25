@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "netlify dev",
-    "build:functions": "esbuild netlify/functions/getAiFeedback.ts --bundle --platform=node --outfile=netlify/functions-dist/getAiFeedback.js",
+    "build:functions": "esbuild netlify/functions/getAiFeedback.ts --bundle --platform=node --outfile=netlify/functions-dist/getAiFeedback.js --external:@google/generative-ai",
     "build": "npm run build:functions && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@netlify/functions": "^5.1.0",
     "@supabase/supabase-js": "^2.57.4",
     "lucide-react": "^0.344.0",
