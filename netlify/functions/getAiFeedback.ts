@@ -21,7 +21,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
   }
   
   // 3. Get the Gemini API key from environment variables
-  const API_KEY = process.env.VITE_GEMINI_API_KEY;
+  const API_KEY = process.env.GEMINI_API_KEY;
   if (!API_KEY) {
     return {
       statusCode: 500,
