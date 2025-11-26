@@ -173,5 +173,26 @@ git push
 
 ---
 
-如需扩展更多内容（如多环境部署、TurborRepo、E2E 测试、CI/CD），我可以继续扩充文档。
+## 📌 9. 故障排查手册 (Troubleshooting)
 
+### Gemini API / Netlify Functions 对接问题
+
+**症状**: 前端调用 Netlify Function 时返回 500 错误，Netlify 函数日志显示 `[404 Not Found] models/gemini-pro is not found for API version...`。
+
+**根本原因**: Google Cloud 项目/API 密钥的区域或权限问题，导致其无法访问标准的全球 API 端点，或者默认的模型名称 (`gemini-pro`) 在该区域不可用。
+
+**解决方案**:
+
+1.  **放弃 SDK, 使用原生 `fetch`**: 为了彻底排除 SDK 版本和打包问题，直接使用 `fetch` 调用 Gemini API 的 REST 端点。这提供了最大的控制权。
+    *   **示例**: `netlify/functions/getAiFeedback.ts` 已包含此实现。
+
+2.  **创建 `listModels` 调试函数**:
+    *   创建一个专门的 Netlify 函数 (例如 `listModels.ts`)，其唯一目的是调用 `https://generativelanguage.googleapis.com/v1/models?key=${API_KEY}`。
+    *   部署这个函数，并直接在浏览器中访问其 URL (`/.netlify/functions/listModels`)。
+
+3.  **验证并使用正确的模型名称**:
+    *   检查 `listModels` 函数返回的 JSON 结果。
+    *   从列表中找到一个支持 `generateContent` 的可用模型（例如 `gemini-2.5-pro`）。
+    *   将这个**确切**的模型名称用于您的主 API 调用函数中。
+
+这个流程可以确保我们使用的是 API 密钥真正有权访问的模型名称，从而解决 404 Not Found 错误。
