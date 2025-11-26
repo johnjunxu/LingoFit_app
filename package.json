@@ -4,19 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "scripts": {
-    "dev": "netlify dev",
-    "build:functions": "esbuild netlify/functions/*.ts --bundle --platform=node --outdir=netlify/functions-dist --external:@google/generative-ai",
-    "build": "npm run build:functions && vite build",
+    "dev": "vercel dev",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@netlify/functions": "^5.1.0",
     "@supabase/supabase-js": "^2.57.4",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
@@ -26,6 +24,7 @@
     "@eslint/js": "^9.9.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
+    "@vercel/node": "^5.5.12",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.18",
     "esbuild": "^0.27.0",
@@ -33,7 +32,6 @@
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",
     "globals": "^15.9.0",
-    "netlify-cli": "^23.11.1",
     "postcss": "^8.4.35",
     "supabase": "^2.62.5",
     "tailwindcss": "^3.4.1",

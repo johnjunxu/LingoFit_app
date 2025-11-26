@@ -1,15 +1,15 @@
-import { Handler, HandlerEvent } from "@netlify/functions";
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
-const handler: Handler = async (event: HandlerEvent) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+const handler = async (req: VercelRequest, res: VercelResponse) => {
+  if (req.method !== "POST") {
+    return res.status(405).send("Method Not Allowed");
   }
 
-  const { question, userAnswer, userPersona } = JSON.parse(event.body || "{}");
+  const { question, userAnswer, userPersona } = req.body;
   const API_KEY = process.env.GEMINI_API_KEY;
 
   if (!API_KEY || !question || !userAnswer || !userPersona) {
-    return { statusCode: 400, body: "Bad Request: Missing required fields or API key." };
+    return res.status(400).send("Bad Request: Missing required fields or API key.");
   }
 
   const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
@@ -34,7 +34,7 @@ const handler: Handler = async (event: HandlerEvent) => {
     if (!response.ok) {
       const errorData = await response.text();
       console.error("Gemini API Error:", errorData);
-      return { statusCode: response.status, body: `Gemini API error: ${errorData}` };
+      return res.status(response.status).send(`Gemini API error: ${errorData}`);
     }
 
     const data = await response.json();
@@ -42,15 +42,11 @@ const handler: Handler = async (event: HandlerEvent) => {
     
     const jsonString = feedbackText.replace(/```json\n|```/g, "").trim();
 
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: jsonString,
-    };
+    res.status(200).setHeader("Content-Type", "application/json").send(jsonString);
 
   } catch (error: any) {
     console.error("Internal Error:", error);
-    return { statusCode: 500, body: `Internal Server Error: ${error.message}` };
+    res.status(500).send(`Internal Server Error: ${error.message}`);
   }
 };
 

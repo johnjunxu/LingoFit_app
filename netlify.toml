@@ -1,4 +1,0 @@
-[functions]
-  directory = "netlify/functions-dist"
-
-[build.environment]
