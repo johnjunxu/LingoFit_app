@@ -8,8 +8,15 @@ const handler: Handler = async (event: HandlerEvent) => {
   const { question, userAnswer, userPersona } = JSON.parse(event.body || "{}");
   const API_KEY = process.env.GEMINI_API_KEY;
 
-  if (!API_KEY || !question || !userAnswer || !userPersona) {
-    return { statusCode: 400, body: "Bad Request: Missing required fields or API key." };
+  console.log("Attempting to call Gemini API...");
+  if (!API_KEY) {
+    console.error("GEMINI_API_KEY is not set!");
+    return { statusCode: 500, body: "Server configuration error: API key not found." };
+  }
+  console.log("API Key found.");
+
+  if (!question || !userAnswer || !userPersona) {
+    return { statusCode: 400, body: "Bad Request: Missing required fields." };
   }
 
   const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key=${API_KEY}`;
