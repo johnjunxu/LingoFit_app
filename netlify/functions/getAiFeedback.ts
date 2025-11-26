@@ -1,76 +1,57 @@
-import { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Handler, HandlerEvent } from "@netlify/functions";
 
-const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
-  // 1. Check for POST request
+const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: "Method Not Allowed" }),
-    };
+    return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  // 2. Parse the incoming request body
   const { question, userAnswer, userPersona } = JSON.parse(event.body || "{}");
-
-  if (!question || !userAnswer || !userPersona) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Missing required fields: question, userAnswer, userPersona" }),
-    };
-  }
-  
-  // 3. Get the Gemini API key from environment variables
   const API_KEY = process.env.GEMINI_API_KEY;
-  if (!API_KEY) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Gemini API key is not configured" }),
-    };
+
+  if (!API_KEY || !question || !userAnswer || !userPersona) {
+    return { statusCode: 400, body: "Bad Request: Missing required fields or API key." };
   }
+
+  const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-latest:generateContent?key=${API_KEY}`;
+  
+  const prompt = `
+    As an English learning assistant named LingoFit, provide feedback for the following in valid JSON format only:
+    User Persona: "${userPersona}"
+    Question: "${question}"
+    User's Answer: "${userAnswer}"
+    JSON format: { "correction": "...", "formalAnswer": "...", "nativeAnswer": "..." }
+  `;
 
   try {
-    // 4. Initialize the generative AI model
-    const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
+    });
 
-    // 5. Construct the prompt
-    const prompt = `
-      As an English learning assistant named LingoFit, your task is to provide feedback on a user's answer to a specific question.
-      User's Persona: "${userPersona}"
-      Question: "${question}"
-      User's Answer: "${userAnswer}"
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Gemini API Error:", errorData);
+      return { statusCode: response.status, body: `Gemini API error: ${errorData}` };
+    }
 
-      Please provide feedback in the following JSON format:
-      {
-        "correction": "A brief, constructive critique of the user's grammar, phrasing, or word choice. Explain why the correction is needed.",
-        "formalAnswer": "An improved, more formal or professional version of the user's answer.",
-        "nativeAnswer": "A more natural, colloquial, or native-sounding version of the user's answer."
-      }
+    const data = await response.json();
+    const feedbackText = data.candidates[0].content.parts[0].text;
+    
+    // Clean the text to ensure it's a valid JSON string
+    const jsonString = feedbackText.replace(/```json\n|```/g, "").trim();
 
-      Focus on being encouraging and helpful.
-    `;
-
-    // 6. Generate content with the model
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const feedbackText = response.text();
-
-    // 7. Return the structured feedback
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: feedbackText,
+      headers: { "Content-Type": "application/json" },
+      body: jsonString,
     };
 
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to get feedback from AI" }),
-    };
+    console.error("Internal Error:", error);
+    return { statusCode: 500, body: "Internal Server Error" };
   }
 };
 
