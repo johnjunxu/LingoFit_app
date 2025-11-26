@@ -74,7 +74,7 @@ export function Practice() {
           </p>
 
           <div className="flex items-center justify-between gap-2">
-            {mockPracticeQuestions.map((_, index) => (
+            {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="flex items-center flex-1">
                 <div className="flex flex-col items-center flex-1">
                   <div
@@ -92,13 +92,10 @@ export function Practice() {
                       <Circle className={`w-4 h-4 ${index === currentQuestionIndex ? 'fill-current' : ''}`} />
                     )}
                   </div>
-                  <span className="text-xs mt-1 text-muted-foreground font-medium">
-                    {index + 1}
-                  </span>
                 </div>
-                {index < mockPracticeQuestions.length - 1 && (
+                {index < 2 && (
                   <div
-                    className={`h-0.5 flex-1 mb-5 transition-colors ${
+                    className={`h-0.5 flex-1 -mb-3 transition-colors ${
                       completedQuestions.has(index)
                         ? 'bg-success'
                         : 'bg-white/10 backdrop-blur-sm'

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Moon, Sun, Save, User as UserIcon, LogOut } from 'lucide-react';
+import { Moon, Sun, Save, User as UserIcon, LogOut, BarChart2, Zap, Clock } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { mockUserProgress } from '../lib/mockData';
 import { useAuth } from '../contexts/AuthContext';
 import { AuthModal } from '../components/AuthModal';
 import { mockProfile } from '../lib/mockData';
@@ -118,6 +119,27 @@ export function Profile() {
             </button>
           </div>
 
+          {user && (
+            <div className="glass-gradient rounded-2xl p-6 shadow-2xl">
+              <h3 className="font-semibold text-foreground mb-4">Statistics</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Zap className="w-4 h-4" />
+                  <span className="text-sm">Streak</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{mockUserProgress.streakDays} Days</div>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <BarChart2 className="w-4 h-4" />
+                  <span className="text-sm">Total XP</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{mockUserProgress.totalXp}</div>
+              </div>
+            </div>
+          </div>
+          )}
         </div>
       </div>
 

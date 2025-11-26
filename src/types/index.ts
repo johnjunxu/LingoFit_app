@@ -8,6 +8,7 @@ export interface UserProgress {
   totalXp: number;
   sessionsCompletedToday: number; // Max 3
   itemsToReview: number;
+  dailyTip?: string;
 }
 
 /**

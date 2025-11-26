@@ -6,6 +6,7 @@ export const mockUserProgress: UserProgress = {
   totalXp: 1250,
   sessionsCompletedToday: 1,
   itemsToReview: 3,
+  dailyTip: "Practice consistently for better results. Even 5 minutes a day can make a significant difference.",
 };
 
 // A pool of flashcards for both practice and review

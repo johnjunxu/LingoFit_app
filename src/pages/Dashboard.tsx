@@ -2,12 +2,23 @@ import { mockUserProgress } from '../lib/mockData';
 import { StreakCard } from '../components/dashboard/StreakCard';
 import { ProgressCard } from '../components/dashboard/ProgressCard';
 import { ReviewCard } from '../components/dashboard/ReviewCard';
+import { GlassTip } from '../components/layout/GlassTip';
+import { useAuth } from '../contexts/AuthContext';
 
 type DashboardProps = {
   onNavigate: (tab: 'practice' | 'review' | 'history') => void;
 };
 
 export function Dashboard({ onNavigate }: DashboardProps) {
+  const { user } = useAuth();
+
+  const progressData = user ? mockUserProgress : {
+    streakDays: 0,
+    sessionsCompletedToday: 0,
+    itemsToReview: 0,
+    dailyTip: "Log in to start your learning journey and track your progress!",
+  };
+
   return (
     <div className="min-h-screen pb-20 px-4 pt-6 relative overflow-hidden">
       <div className="gradient-orb-pink w-[400px] h-[400px] -top-48 -right-48" />
@@ -23,21 +34,27 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
         <div className="grid grid-cols-2 gap-4 auto-rows-fr">
           <StreakCard
-            days={mockUserProgress.streakDays}
+            days={progressData.streakDays}
             onClick={() => onNavigate('history')}
           />
 
           <ProgressCard
-            completedSessions={mockUserProgress.sessionsCompletedToday}
+            completedSessions={progressData.sessionsCompletedToday}
             targetSessions={3}
             onClick={() => onNavigate('practice')}
           />
 
           <ReviewCard
-            dueToday={mockUserProgress.itemsToReview}
+            dueToday={progressData.itemsToReview}
             onClick={() => onNavigate('review')}
           />
         </div>
+
+        {progressData.dailyTip && (
+          <div className="mt-6">
+            <GlassTip tip={progressData.dailyTip} />
+          </div>
+        )}
       </div>
     </div>
   );
