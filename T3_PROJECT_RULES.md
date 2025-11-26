@@ -96,7 +96,7 @@ npx prisma migrate dev
 不要在代码中暴露任何密钥。
 所有敏感信息必须放在：
 - `.env.local`（本地）
-- `.env.production`（部署）
+- `.env.production`部署）
 
 必须通过 TypeScript 安全验证：
 ```
@@ -184,11 +184,11 @@ git push
 **解决方案**:
 
 1.  **放弃 SDK, 使用原生 `fetch`**: 为了彻底排除 SDK 版本和打包问题，直接使用 `fetch` 调用 Gemini API 的 REST 端点。这提供了最大的控制权。
-    *   **示例**: `netlify/functions/getAiFeedback.ts` 已包含此实现。
+    *   **示例**: `api/getAiFeedback.ts` 已包含此实现。
 
 2.  **创建 `listModels` 调试函数**:
-    *   创建一个专门的 Netlify 函数 (例如 `listModels.ts`)，其唯一目的是调用 `https://generativelanguage.googleapis.com/v1/models?key=${API_KEY}`。
-    *   部署这个函数，并直接在浏览器中访问其 URL (`/.netlify/functions/listModels`)。
+    *   创建一个专门的 Serverless 函数 (例如 `api/listModels.ts`)，其唯一目的是调用 `https://generativelanguage.googleapis.com/v1/models?key=${API_KEY}`。
+    *   部署这个函数，并直接在浏览器中访问其 URL (`/api/listModels`)。
 
 3.  **验证并使用正确的模型名称**:
     *   检查 `listModels` 函数返回的 JSON 结果。
@@ -196,3 +196,21 @@ git push
     *   将这个**确切**的模型名称用于您的主 API 调用函数中。
 
 这个流程可以确保我们使用的是 API 密钥真正有权访问的模型名称，从而解决 404 Not Found 错误。
+
+### Vercel / Netlify 部署的 Node.js 版本问题
+
+**症状**: 部署失败，错误日志反复提示 Node.js 版本不兼容，并且建议的版本号在不同次部署中相互矛盾 (例如，一次要求 `18.x`，下一次要求 `24.x`)。
+
+**根本原因**: 部署平台（Vercel/Netlify）在为项目分配构建环境时可能存在不一致性，或者项目中的配置文件 (`package.json` 的 `engines` 字段, `.nvmrc`, `vercel.json`, `netlify.toml`) 与平台 UI 中的设置产生了冲突。过时的构建器或插件也可能导致版本解析错误。
+
+**最终解决方案**:
+
+1.  **清理所有本地版本配置**: 从 `package.json` 中移除 `engines` 字段，并删除项目根目录下的 `.nvmrc` 文件。
+2.  **完全依赖平台 UI 设置**:
+    *   登录您的部署平台（Vercel 或 Netlify）。
+    *   进入项目设置 > General 或 Environment。
+    *   找到 **Node.js Version** 的设置选项。
+    *   从下拉菜单中选择一个**明确的、受支持的 LTS 版本**（例如，`20.x`）。
+    *   保存设置。
+3.  **清除缓存并重新部署**: 在平台的部署页面，选择 “Clear cache and redeploy” 选项来触发一次全新的构建。
+
