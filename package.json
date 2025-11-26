@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "netlify dev",
-    "build:functions": "esbuild netlify/functions/getAiFeedback.ts --bundle --platform=node --outfile=netlify/functions-dist/getAiFeedback.js --external:@google/generative-ai",
+    "build:functions": "esbuild netlify/functions/*.ts --bundle --platform=node --outdir=netlify/functions-dist --external:@google/generative-ai",
     "build": "npm run build:functions && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
