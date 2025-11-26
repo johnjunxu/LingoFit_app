@@ -12,7 +12,7 @@ const handler: Handler = async (event: HandlerEvent) => {
     return { statusCode: 400, body: "Bad Request: Missing required fields or API key." };
   }
 
-  const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
+  const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key=${API_KEY}`;
   
   const prompt = `
     As an English learning assistant named LingoFit, provide feedback for the following in valid JSON format only:
