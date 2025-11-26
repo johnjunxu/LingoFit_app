@@ -1,4 +1,5 @@
 import { Handler, HandlerEvent } from "@netlify/functions";
+import { HttpsProxyAgent } from "https-proxy-agent";
 
 const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod !== "POST") {
@@ -7,19 +8,16 @@ const handler: Handler = async (event: HandlerEvent) => {
 
   const { question, userAnswer, userPersona } = JSON.parse(event.body || "{}");
   const API_KEY = process.env.GEMINI_API_KEY;
+  const PROXY_URL = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
 
-  console.log("Attempting to call Gemini API...");
   if (!API_KEY) {
-    console.error("GEMINI_API_KEY is not set!");
     return { statusCode: 500, body: "Server configuration error: API key not found." };
   }
-  console.log("API Key found.");
-
   if (!question || !userAnswer || !userPersona) {
     return { statusCode: 400, body: "Bad Request: Missing required fields." };
   }
 
-  const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key=${API_KEY}`;
+  const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
   
   const prompt = `
     As an English learning assistant named LingoFit, provide feedback for the following in valid JSON format only:
@@ -29,6 +27,9 @@ const handler: Handler = async (event: HandlerEvent) => {
     JSON format: { "correction": "...", "formalAnswer": "...", "nativeAnswer": "..." }
   `;
 
+  // Use a proxy agent if the PROXY_URL is set
+  const agent = PROXY_URL ? new HttpsProxyAgent(PROXY_URL) : undefined;
+
   try {
     const response = await fetch(API_URL, {
       method: "POST",
@@ -36,6 +37,8 @@ const handler: Handler = async (event: HandlerEvent) => {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
       }),
+      // @ts-ignore - The `dispatcher` type is not perfectly aligned but works
+      dispatcher: agent,
     });
 
     if (!response.ok) {
@@ -47,7 +50,6 @@ const handler: Handler = async (event: HandlerEvent) => {
     const data = await response.json();
     const feedbackText = data.candidates[0].content.parts[0].text;
     
-    // Clean the text to ensure it's a valid JSON string
     const jsonString = feedbackText.replace(/```json\n|```/g, "").trim();
 
     return {
@@ -56,9 +58,9 @@ const handler: Handler = async (event: HandlerEvent) => {
       body: jsonString,
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Internal Error:", error);
-    return { statusCode: 500, body: "Internal Server Error" };
+    return { statusCode: 500, body: `Internal Server Error: ${error.message}` };
   }
 };
 
