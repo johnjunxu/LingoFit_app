@@ -1,9 +1,11 @@
-import { mockUserProgress } from '../lib/mockData';
+import { useState, useEffect } from 'react';
 import { StreakCard } from '../components/dashboard/StreakCard';
 import { ProgressCard } from '../components/dashboard/ProgressCard';
 import { ReviewCard } from '../components/dashboard/ReviewCard';
 import { GlassTip } from '../components/layout/GlassTip';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserStats } from '../lib/database';
+import { UserProgress } from '../types';
 
 type DashboardProps = {
   onNavigate: (tab: 'practice' | 'review' | 'history') => void;
@@ -11,13 +13,28 @@ type DashboardProps = {
 
 export function Dashboard({ onNavigate }: DashboardProps) {
   const { user } = useAuth();
+  const [progressData, setProgressData] = useState<UserProgress | null>(null);
 
-  const progressData = user ? mockUserProgress : {
-    streakDays: 0,
-    sessionsCompletedToday: 0,
-    itemsToReview: 0,
-    dailyTip: "Log in to start your learning journey and track your progress!",
-  };
+  useEffect(() => {
+    async function loadStats() {
+      if (user) {
+        const stats = await getUserStats(user.id);
+        setProgressData({
+          ...stats,
+          dailyTip: "Practice consistently for better results. Even 5 minutes a day can make a significant difference.",
+        });
+      } else {
+        setProgressData({
+          streakDays: 0,
+          totalXp: 0,
+          sessionsCompletedToday: 0,
+          itemsToReview: 0,
+          dailyTip: "Log in to start your learning journey and track your progress!",
+        });
+      }
+    }
+    loadStats();
+  }, [user]);
 
   return (
     <div className="min-h-screen pb-20 px-4 pt-6 relative overflow-hidden">
@@ -32,28 +49,31 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           <p className="text-muted-foreground">Your English learning journey</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 auto-rows-fr">
-          <StreakCard
-            days={progressData.streakDays}
-            onClick={() => onNavigate('history')}
-          />
-
-          <ProgressCard
-            completedSessions={progressData.sessionsCompletedToday}
-            targetSessions={3}
-            onClick={() => onNavigate('practice')}
-          />
-
-          <ReviewCard
-            dueToday={progressData.itemsToReview}
-            onClick={() => onNavigate('review')}
-          />
-        </div>
-
-        {progressData.dailyTip && (
-          <div className="mt-6">
-            <GlassTip tip={progressData.dailyTip} />
-          </div>
+        {progressData ? (
+          <>
+            <div className="grid grid-cols-2 gap-4 auto-rows-fr">
+              <StreakCard
+                days={progressData.streakDays}
+                onClick={() => onNavigate('history')}
+              />
+              <ProgressCard
+                completedSessions={progressData.sessionsCompletedToday}
+                targetSessions={3}
+                onClick={() => onNavigate('practice')}
+              />
+              <ReviewCard
+                dueToday={progressData.itemsToReview}
+                onClick={() => onNavigate('review')}
+              />
+            </div>
+            {progressData.dailyTip && (
+              <div className="mt-6">
+                <GlassTip tip={progressData.dailyTip} />
+              </div>
+            )}
+          </>
+        ) : (
+          <p>Loading stats...</p> // Loading state
         )}
       </div>
     </div>

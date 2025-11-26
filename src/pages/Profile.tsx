@@ -1,21 +1,39 @@
-import { useState } from 'react';
-import { Moon, Sun, Save, User as UserIcon, LogOut, BarChart2, Zap, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Moon, Sun, Save, User as UserIcon, LogOut, BarChart2, Zap } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
-import { mockUserProgress } from '../lib/mockData';
 import { useAuth } from '../contexts/AuthContext';
 import { AuthModal } from '../components/AuthModal';
-import { mockProfile } from '../lib/mockData';
+import { getProfile, updatePersona, getUserStats } from '../lib/database';
+import { UserProgress } from '../types';
 
 export function Profile() {
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
-  const [userPersona, setUserPersona] = useState(mockProfile.persona);
+  const [userPersona, setUserPersona] = useState('');
+  const [stats, setStats] = useState<Partial<UserProgress>>({ streakDays: 0, totalXp: 0 });
   const [isSaved, setIsSaved] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const handleSave = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+  useEffect(() => {
+    async function loadData() {
+      if (user) {
+        const profile = await getProfile(user);
+        if (profile?.persona) {
+          setUserPersona(profile.persona);
+        }
+        const userStats = await getUserStats(user.id);
+        setStats(userStats);
+      }
+    }
+    loadData();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (user) {
+      await updatePersona(user.id, userPersona);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    }
   };
 
   return (
@@ -128,14 +146,14 @@ export function Profile() {
                   <Zap className="w-4 h-4" />
                   <span className="text-sm">Streak</span>
                 </div>
-                <div className="text-2xl font-bold text-foreground">{mockUserProgress.streakDays} Days</div>
+                <div className="text-2xl font-bold text-foreground">{stats.streakDays} Days</div>
               </div>
               <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <BarChart2 className="w-4 h-4" />
                   <span className="text-sm">Total XP</span>
                 </div>
-                <div className="text-2xl font-bold text-foreground">{mockUserProgress.totalXp}</div>
+                <div className="text-2xl font-bold text-foreground">{stats.totalXp}</div>
               </div>
             </div>
           </div>
