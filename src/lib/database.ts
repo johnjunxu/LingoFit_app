@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { User } from '@supabase/supabase-js';
-import { Flashcard } from '../types'; // Assuming Flashcard type is defined here
+import { Flashcard } from '../types';
 
 export type Profile = {
   id: string;
@@ -16,14 +16,24 @@ export async function getProfile(user: User): Promise<Profile | null> {
       .eq('id', user.id)
       .single();
 
-    if (error && status !== 406) {
-      throw error;
-    }
-
+    if (error && status !== 406) throw error;
     return data;
   } catch (error) {
     console.error('Error getting profile:', error);
     return null;
+  }
+}
+
+export async function createProfile(user: User) {
+  try {
+    const { error } = await supabase.from('profiles').insert({
+      id: user.id,
+      email: user.email,
+    });
+    if (error) throw error;
+    console.log('Profile created for new user.');
+  } catch (error) {
+    console.error('Error creating profile:', error);
   }
 }
 
@@ -52,7 +62,7 @@ export async function getFlashcards(userId: string): Promise<Flashcard[]> {
     
     const flashcards = data?.map(card => ({
         ...card,
-        id: String(card.id), // Convert id to string
+        id: String(card.id),
         nextReviewDate: card.next_review_date || new Date().toISOString()
     })) || [];
     
@@ -72,17 +82,15 @@ export async function getUserStats(userId: string) {
 
         if (flashcardsError) throw flashcardsError;
 
-        const totalXp = (flashcards?.length || 0) * 10; // Example: 10 XP per card
+        const totalXp = (flashcards?.length || 0) * 10;
         const itemsToReview = flashcards?.filter(c => c.status === 'reviewing' || c.status === 'new').length || 0;
-        
-        // A simple streak calculation (this is a placeholder for a more complex logic)
         const streakDays = new Set(flashcards?.map(c => c.created_at ? new Date(c.created_at).toDateString() : '')).size;
 
         return {
             totalXp,
             itemsToReview,
             streakDays,
-            sessionsCompletedToday: 0, // Placeholder
+            sessionsCompletedToday: 0,
         };
 
     } catch (error) {
