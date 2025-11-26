@@ -3,9 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "engines": {
-    "node": "18"
-  },
   "scripts": {
     "dev": "netlify dev",
     "build:functions": "esbuild netlify/functions/*.ts --bundle --platform=node --outdir=netlify/functions-dist --external:@google/generative-ai",
