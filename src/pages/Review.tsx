@@ -1,26 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Calendar, RefreshCw, TrendingUp, ArrowLeft, Trophy, Sparkles } from 'lucide-react';
-import { getFlashcards } from '../lib/database';
+import { mockFlashcards } from '../lib/mockData';
 import { Flashcard } from '../types';
-import { useAuth } from '../contexts/AuthContext';
 
 export function Review() {
-  const { user } = useAuth();
-  const [reviewQueue, setReviewQueue] = useState<Flashcard[]>([]);
-  
-  useEffect(() => {
-    async function loadFlashcards() {
-      if (user) {
-        const allCards = await getFlashcards(user.id);
-        const cardsToReview = allCards.filter(card => card.status === 'new' || card.status === 'reviewing');
-        setReviewQueue(cardsToReview);
-      } else {
-        setReviewQueue([]);
-      }
-    }
-    loadFlashcards();
-  }, [user]);
-
+  const [reviewQueue, setReviewQueue] = useState<Flashcard[]>(
+    mockFlashcards.filter(card => card.status === 'new' || card.status === 'reviewing')
+  );
   const [selectedReview, setSelectedReview] = useState<Flashcard | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
 
