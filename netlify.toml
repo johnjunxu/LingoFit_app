@@ -1,6 +1,5 @@
 [functions]
-  directory = "netlify/functions-dist"
-  node_bundler = "esbuild"
-  external_node_modules = ["@google/generative-ai"]
+  directory = "netlify/functions"
 
-[build.environment]
+[dev]
+  command = "vite"
