@@ -1,20 +1,39 @@
-import { useState } from 'react';
-import { Moon, Sun, Save, User as UserIcon, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Moon, Sun, Save, User as UserIcon, LogOut, BarChart2, Zap } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { AuthModal } from '../components/AuthModal';
-import { mockProfile } from '../lib/mockData';
+import { getProfile, updatePersona, getUserStats } from '../lib/database';
+import { UserProgress } from '../types';
 
 export function Profile() {
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
-  const [userPersona, setUserPersona] = useState(mockProfile.persona);
+  const [userPersona, setUserPersona] = useState('');
+  const [stats, setStats] = useState<Partial<UserProgress>>({ streakDays: 0, totalXp: 0 });
   const [isSaved, setIsSaved] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const handleSave = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+  useEffect(() => {
+    async function loadData() {
+      if (user) {
+        const profile = await getProfile(user);
+        if (profile?.persona) {
+          setUserPersona(profile.persona);
+        }
+        const userStats = await getUserStats(user.id);
+        setStats(userStats);
+      }
+    }
+    loadData();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (user) {
+      await updatePersona(user.id, userPersona);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    }
   };
 
   return (
@@ -79,6 +98,27 @@ export function Profile() {
               {isSaved ? 'Saved!' : 'Save Persona'}
             </button>
           </div>
+          {user && (
+            <div className="glass-gradient rounded-2xl p-6 shadow-2xl">
+              <h3 className="font-semibold text-foreground mb-4">Statistics</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Zap className="w-4 h-4" />
+                  <span className="text-sm">Streak</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{stats.streakDays} Days</div>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <BarChart2 className="w-4 h-4" />
+                  <span className="text-sm">Total XP</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{stats.totalXp}</div>
+              </div>
+            </div>
+          </div>
+          )}
         </div>
       </div>
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
