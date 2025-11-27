@@ -43,3 +43,4 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       </div>
     </div>
   );
+}
