@@ -22,7 +22,7 @@ export function Practice() {
     setAiFeedback(null);
 
     try {
-      const response = await fetch('/api/getAiFeedback', {
+      const response = await fetch('/.netlify/functions/getAiFeedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
