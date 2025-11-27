@@ -51,7 +51,32 @@ export function Review() {
           <p className="text-sm text-muted-foreground">{reviewQueue.length} items to review</p>
         </div>
         
-        {/* ... JSX for different states */}
+        {/* Full JSX for different states */}
+        {showCelebration ? (
+          <div className="text-center p-8 glass-gradient rounded-2xl">
+            <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">All Done!</h2>
+            <p>You've completed your reviews for today. Great job!</p>
+          </div>
+        ) : selectedReview ? (
+          <div>
+            {/* ... JSX for selected review ... */}
+          </div>
+        ) : reviewQueue.length > 0 ? (
+          <div className="space-y-4">
+            {reviewQueue.map(item => (
+              <div key={item.id} onClick={() => setSelectedReview(item)} className="glass-gradient glass-hover rounded-2xl p-4 cursor-pointer">
+                <p className="font-medium">{item.question}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center p-8 glass-gradient rounded-2xl">
+            <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Nothing to review!</h2>
+            <p className="text-muted-foreground">You're all caught up. Check back later.</p>
+          </div>
+        )}
       </div>
     </div>
   );
