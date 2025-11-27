@@ -53,5 +53,4 @@ const handler: Handler = async (event: HandlerEvent) => {
     return { statusCode: 500, body: `Internal Server Error: ${error.message}` };
   }
 };
-
 export { handler };
