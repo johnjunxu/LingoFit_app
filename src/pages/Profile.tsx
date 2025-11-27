@@ -124,3 +124,4 @@ export function Profile() {
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
+}

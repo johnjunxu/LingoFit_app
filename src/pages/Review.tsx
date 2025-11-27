@@ -51,7 +51,6 @@ export function Review() {
           <p className="text-sm text-muted-foreground">{reviewQueue.length} items to review</p>
         </div>
         
-        {/* Full JSX for different states */}
         {showCelebration ? (
           <div className="text-center p-8 glass-gradient rounded-2xl">
             <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
